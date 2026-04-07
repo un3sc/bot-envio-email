@@ -1,0 +1,52 @@
+name: Edital Alert Bot
+
+on:
+  # Executa automaticamente às terças e quintas às 21h UTC (18h BRT)
+  # Ajuste o cron conforme sua necessidade:
+  # https://crontab.guru/
+  schedule:
+    - cron: '0 21 * * 2,4'
+
+  # Permite execução manual pela aba Actions do GitHub
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Rodar script
+        run: python main.py
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      # Persiste o storage.json no repositório para evitar reprocessamentos
+      - name: Commit storage.json
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/bot_alertas/storage/storage.json
+
+          if git diff --cached --quiet; then
+            echo "Sem mudanças no storage.json"
+          else
+            git commit -m "chore: update storage.json [skip ci]"
+            git push
+          fi
