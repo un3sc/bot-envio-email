@@ -4,8 +4,8 @@ on:
   # Executa automaticamente às terças e quintas às 21h UTC (18h BRT)
   # Ajuste o cron conforme sua necessidade:
   # https://crontab.guru/
-  schedule:
-    - cron: '0 21 * * 2,4'
+  # schedule:
+    # - cron: 
 
   # Permite execução manual pela aba Actions do GitHub
   workflow_dispatch:
